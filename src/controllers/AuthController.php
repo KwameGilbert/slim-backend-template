@@ -10,6 +10,7 @@ use App\Models\Organizer;
 use App\Models\EmailVerificationToken;
 use App\Helper\ResponseHelper;
 use App\Services\AuthService;
+use App\Services\ActivityLogService;
 use App\Services\EmailService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -30,10 +31,12 @@ use Exception;
 class AuthController
 {
     private AuthService $authService;
+    private ActivityLogService $activityLogger;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, ActivityLogService $activityLogger)
     {
         $this->authService = $authService;
+        $this->activityLogger = $activityLogger;
     }
 
     /**
@@ -74,6 +77,15 @@ class AuthController
 
             // Log registration event
             $this->authService->logAuditEvent($user->id, 'register', $metadata);
+
+            // Log to activity log
+            $this->activityLogger->log(
+                $user->id, 
+                'register', 
+                'User', 
+                $user->id, 
+                "User registered: {$user->email}"
+            );
 
             // Generate email verification token and send verification email
             $this->sendVerificationEmail($user);
@@ -419,7 +431,7 @@ class AuthController
     /**
      * Extract metadata from request
      */
-    private function getRequestMetadata(Request $request): array
+    protected function getRequestMetadata(Request $request): array
     {
         $serverParams = $request->getServerParams();
 

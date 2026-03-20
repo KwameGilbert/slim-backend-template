@@ -55,13 +55,9 @@ return function ($container) {
         return new VerificationService($container->get(EmailService::class));
     });
 
-    // Notification System Services
-    $container->set(\App\Services\NotificationQueue::class, function () {
-        return new \App\Services\NotificationQueue();
-    });
-
-    $container->set(\App\Services\TemplateEngine::class, function () {
-        return new \App\Services\TemplateEngine();
+    // Generic Infrastructure Services
+    $container->set(\App\Services\ActivityLogService::class, function () {
+        return new \App\Services\ActivityLogService();
     });
 
     $container->set(\App\Services\UploadService::class, function () {
@@ -84,16 +80,16 @@ return function ($container) {
     // ==================== CONTROLLERS ====================
     
     $container->set(AuthController::class, function ($container) {
-        return new AuthController($container->get(AuthService::class));
+        return new AuthController(
+            $container->get(AuthService::class),
+            $container->get(\App\Services\ActivityLogService::class)
+        );
     });
     
-    $container->set(UserController::class, function () {
-        return new UserController();
+    $container->set(UserController::class, function ($container) {
+        return new UserController($container->get(\App\Services\ActivityLogService::class));
     });
 
-    $container->set(OrganizerController::class, function () {
-        return new OrganizerController();
-    });
     
     $container->set(PasswordResetController::class, function ($container) {
         return new PasswordResetController(
@@ -102,61 +98,7 @@ return function ($container) {
         );
     });
 
-    $container->set(AttendeeController::class, function () {
-        return new AttendeeController();
-    });
-
-    $container->set(EventController::class, function () {
-        return new EventController();
-    });
-
-    $container->set(EventImageController::class, function ($container) {
-        return new EventImageController(
-            $container->get(\App\Services\UploadService::class)
-        );
-    });
-
-    $container->set(TicketTypeController::class, function () {
-        return new TicketTypeController();
-    });
-
-   $container->set(OrderController::class, function ($container) {
-        return new OrderController(
-            $container->get(\App\Services\NotificationService::class)
-        );
-    });
-
-    $container->set(TicketController::class, function () {
-        return new TicketController();
-    });
-
-    $container->set(ScannerController::class, function () {
-        return new ScannerController();
-    });
-
-    $container->set(PosController::class, function () {
-        return new PosController();
-    });
-
-    $container->set(AwardController::class, function ($container) {
-        return new AwardController(
-            $container->get(\App\Services\UploadService::class)
-        );
-    });
-
-    $container->set(AwardCategoryController::class, function () {
-        return new AwardCategoryController();
-    });
-
-    $container->set(AwardNomineeController::class, function ($container) {
-        return new AwardNomineeController(
-            $container->get(\App\Services\UploadService::class)
-        );
-    });
-
-    $container->set(AwardVoteController::class, function () {
-        return new AwardVoteController();
-    });
+   
     
     // ==================== MIDDLEWARES ====================
     
